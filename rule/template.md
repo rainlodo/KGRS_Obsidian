@@ -44,7 +44,7 @@ Data: {{date|format("YYYY-MM-DD")}}
 
 ---
 
-> 3. [[conception]]
+> 3. conception
 {% persist "normal annotation" %}
 {% set newAnnotations = annotations | filterby("date", "dateafter", lastImportDate) %}
 {% if newAnnotations.length > 0 %}
