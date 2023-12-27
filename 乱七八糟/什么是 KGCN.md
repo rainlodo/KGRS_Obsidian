@@ -39,7 +39,7 @@ self.relation_embedding = nn.Embedding(relation_num, e_dim, max_norm=1)
 
 权重计算：
 $$
-\begin{aligned}\omega^u_{R_i}=g(u,R_i)\end{aligned}\quad g与f类似，此处进行求内积
+\begin{aligned}\omega^u_{R_i}=g(u,R_i)\end{aligned}\quad g与f类似，此处进行求内积，\\表示用户u对关系R_i的偏好程度向后传递该权重
 $$
 
 
