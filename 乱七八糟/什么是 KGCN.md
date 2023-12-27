@@ -35,7 +35,13 @@ self.entity_embedding = nn.Embedding(entity_num, e_dim, max_norm=1)
 self.relation_embedding = nn.Embedding(relation_num, e_dim, max_norm=1)
 ````
 
-其次
+随后开始进行消息传递流程
+
+权重计算：
+$$
+\begin{aligned}\omega^u_{R_i}=g(u,R_i)\end{aligned}\quad g与f类似，此处进行求内积
+$$
+
 
 ![[Pasted image 20231227163517.png]]
 
