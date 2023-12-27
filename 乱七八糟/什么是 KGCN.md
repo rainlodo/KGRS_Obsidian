@@ -28,6 +28,16 @@ $$
 \end{aligned}
 $$
 
+在代码上
+````python
+self.user_embedding = nn.Embedding(user_num, e_dim, max_norm=1)  
+self.entity_embedding = nn.Embedding(entity_num, e_dim, max_norm=1)  
+self.relation_embedding = nn.Embedding(relation_num, e_dim, max_norm=1)
+````
+
+其次
+
+![[Pasted image 20231227163517.png]]
 
 
 predict：
