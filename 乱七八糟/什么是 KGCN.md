@@ -24,7 +24,7 @@ KGCN的中心思想是利用图神经网络的消息传递机制与基本的推�
 首先创建item，user，relation 的向量空间
 
 $$
-\begin{aligned}item_{emb},\;relation_{emb},\;user_{emb}=embedding(item,\;relation,\;user)
+\begin{aligned}item_{emb},\;relation_{emb},\;user_{emb}=embedding(\\itemNum,\;relationNum,\;userNum,dim)
 \end{aligned}
 $$
 
