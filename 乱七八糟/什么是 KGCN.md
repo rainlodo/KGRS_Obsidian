@@ -39,16 +39,21 @@ self.relation_embedding = nn.Embedding(relation_num, e_dim, max_norm=1)
 
 权重计算：
 $$
-\begin{aligned}\omega^u_{R_i}=g(u,R_i)\end{aligned}\quad g与f类似，此处进行求内积，\\表示用户u对关系R_i的偏好程度向后传递该权重
+\begin{aligned}\omega^u_{R_i}=g(u,R_i)\quad g与f类似，此处进行求内积，\\ \\表示用户u对关系R_i的偏好程度向后传递该权重
+\end{aligned}
 $$
-
+随后
+$$
+\begin{aligned}{\tilde{\omega}^u_{R_i}}=Softmax(\omega^u_{R_i})=\frac{\exp(\omega^u_{R_i})}{{\sum}_{j\in N_{(V)}}\exp(\omega^u_{R_j})} \quad 对 \omega^u_{R_i} 进行归一化 \\\\ 其中N_{(V)}为节点v的一阶邻居集
+\end{aligned}
+$$
 
 ![[Pasted image 20231227163517.png]]
 
 
 predict：
 $$
-\begin{aligned}y_{uv}=f(u, v)\quad其中 f(·) 可以是任意函数，作者采用了内积\\
+\begin{aligned}\widehat{y}_{uv}=f(u, v)\quad其中 f(·) 可以是任意函数，作者采用了内积\\
 最后计算概率\quad p=sigmoid(y_{uv})
 \end{aligned}
 $$
