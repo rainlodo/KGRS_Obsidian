@@ -21,7 +21,7 @@ KGCN的中心思想是利用图神经网络的消息传递机制与基本的推�
 
 尽管 KGCN 叫做 GCN（图卷积）但主要还是以计算注意力的方式进行消息传递，这个注意力可以理解为该关系影响用户行为的偏好程度。
 
-首先对item，user，relation 进行嵌入
+首先创建item，user，relation 的向量空间
 
 $$
 \begin{aligned}item_{emb},\;relation_{emb},\;user_{emb}=embedding(item,\;relation,\;user)
