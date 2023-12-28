@@ -114,13 +114,28 @@ $$
 最后计算概率\quad p=sigmoid(y_{uv})
 \end{aligned}
 $$
+````python
+out = torch.sigmoid(torch.sum(user_embeddings * out_item_embeddings, dim=-1))
+````
+
 ## 损失计算
 若是 CTR 预估可以使用 BCE 损失函数，若是评分预测则可以使用平方差损失函数
 $$
-\begin{aligned}\widehat{y}_{uv}=f(u, v)\quad其中 f(·) 可以是任意函数，作者采用了内积\\
-最后计算概率\quad p=sigmoid(y_{uv})
+\begin{aligned}BCE Loss=−(ytrue​log(y)+(1−ytrue​)log(1−y)) \\
+MSE Loss=n1​∑i=1n​(ytrue,i​−yi​)2
 \end{aligned}
 $$
+
+将损失向前传播即可训练模型
+````python
+_v = net(u, i)  
+loss = loss_fcn(logits, _v.float())  
+optimizer.zero_grad()  
+loss.backward()  
+optimizer.step()
+````
+
+
 ![[Pasted image 20231227163517.png]]
 
 
