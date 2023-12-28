@@ -21,6 +21,13 @@ KGCN的中心思想是利用图神经网络的消息传递机制与基本的推�
 5. **重复迭代（Iteration）：** 上述的步骤会被重复执行多次，每一轮迭代中，节点的表示都会不断地被更新。
 
 
+## 问题定义
+给出用户项目交互矩阵Y与知识图谱G，预测用户u对之前未交互过的项目v感兴趣的概率，目标为学习一个概率预测函数
+$$
+\begin{aligned}\hat{y}_{u,v}=F(u,v|\Theta,Y,G)
+\end{aligned}
+$$
+(item, h, t 都在同一向量空间)
 # 怎么实现推荐
 
 ## 首先创建item，user，relation 的向量空间
@@ -39,9 +46,9 @@ self.relation_embedding = nn.Embedding(relation_num, e_dim, max_norm=1)
 
 ## 随后开始进行消息传递流程
 
-权重计算：
+计算用户关系分数：*（计算实体的邻域表示时，用户关系分数充当个性化过滤器，因为我们将相对于这些用户特定分数有偏见的邻居聚集在一起。）*
 $$
-\begin{aligned}\omega^u_{R_i}=g(u,R_i)\quad g与f类似，此处进行求内积，\\ \\表示用户u对关系R_i的偏好程度向后传递该权重
+\begin{aligned}\pi^u_{R_i}=g(u,R_i)\quad g可为任意函数，此处进行求内积，\\ \\表示用户u对关系R_i的偏好程度向后传递该权重
 \end{aligned}
 $$
 随后使用 softmax 进行归一化
