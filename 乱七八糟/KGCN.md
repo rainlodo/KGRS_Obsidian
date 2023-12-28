@@ -1,6 +1,9 @@
 # 什么是 KGCN
 
 KGCN 即知识图谱卷积网络（Knowledge Graph Convolutional Networks），能够结合知识图谱信息完成推荐
+KGCN的中心思想是利用图神经网络的消息传递机制与基本的推荐思想结合训练
+
+尽管 KGCN 叫做 GCN（图卷积）但主要还是以计算注意力的方式进行消息传递，这个注意力可以理解为该关系影响用户行为的偏好程度
 
 # 什么什么是图神经网络的消息传递机制
 图神经网络（Graph Neural Network，简称GNN）是一种用于处理图数据的机器学习模型。在图神经网络中，消息传递机制是一种核心的操作，用于在图结构中传递信息和更新节点的表示。
@@ -17,12 +20,10 @@ KGCN 即知识图谱卷积网络（Knowledge Graph Convolutional Networks），�
     
 5. **重复迭代（Iteration）：** 上述的步骤会被重复执行多次，每一轮迭代中，节点的表示都会不断地被更新。
 
+
 # 怎么实现推荐
-KGCN的中心思想是利用图神经网络的消息传递机制与基本的推荐思想结合训练
 
-尽管 KGCN 叫做 GCN（图卷积）但主要还是以计算注意力的方式进行消息传递，这个注意力可以理解为该关系影响用户行为的偏好程度。
-
-首先创建item，user，relation 的向量空间
+## 首先创建item，user，relation 的向量空间
 
 $$
 \begin{aligned}item_{emb},\;relation_{emb},\;user_{emb}=embedding(\\itemNum,\;relationNum,\;userNum,dim)
@@ -36,27 +37,93 @@ self.entity_embedding = nn.Embedding(entity_num, e_dim, max_norm=1)
 self.relation_embedding = nn.Embedding(relation_num, e_dim, max_norm=1)
 ````
 
-随后开始进行消息传递流程
+## 随后开始进行消息传递流程
 
 权重计算：
 $$
 \begin{aligned}\omega^u_{R_i}=g(u,R_i)\quad g与f类似，此处进行求内积，\\ \\表示用户u对关系R_i的偏好程度向后传递该权重
 \end{aligned}
 $$
-随后
+随后使用 softmax 进行归一化
 $$
 \begin{aligned}{\tilde{\omega}^u_{R_i}}=Softmax(\omega^u_{R_i})=\frac{\exp(\omega^u_{R_i})}{{\sum}_{j\in N_{(V)}}\exp(\omega^u_{R_j})} \quad 对 \omega^u_{R_i} 进行归一化 \\\\ 其中N_{(V)}为节点v的一阶邻居集
 \end{aligned}
 $$
+随后
+$$
+\begin{aligned}进行一次加权求和操作得到 \tilde{v} \\
+\tilde{v}={{\sum}_{i\in N_{(V)}}{\tilde{\omega}^u_{R_i}}}·e_i
+\end{aligned}
+$$
 
-![[Pasted image 20231227163517.png]]
 
+在代码上
+````python
+# [batch_size, n_neighbor]  
+user_relation_scores = torch.sum(user_embeddings * neighbor_relations, dim=2)  
+# [batch_size, n_neighbor]  
+user_relation_scores_normalized = F.softmax(user_relation_scores, dim=-1)
+# [batch_size, dim ]  
+neighbor_vectors = torch.sum(user_relation_scores_normalized * neighbor_entitys, dim=1)
+````
 
-predict：
+## 进行消息聚合
+$$
+\begin{aligned}经过消息聚合后便可得到本轮物品 V 的向量 v\\
+\end{aligned}
+$$
+$$
+\begin{aligned}聚合公式 \quad v = \sigma(W·agg(\tilde{v},e)) + b
+\end{aligned}
+$$
+其中，作者给出三种聚合方式如下
+1.求和聚合
+$$
+\begin{aligned} agg_{sum}(\tilde{v},e)= \tilde{v} + e \\
+\\ e为V的初始向量
+\end{aligned}
+$$
+2.拼接聚合
+$$
+\begin{aligned} agg_{neighbor}(\tilde{v},e)= \tilde{v} || e \\\\
+使用拼接聚合时需要注意维度变化，\\ 
+假设\tilde{v}与e原维度都为F则拼接后变为2F，\\ W和b的维度需要做相应的变化
+\end{aligned}
+$$
+3.邻居聚合
+$$
+\begin{aligned} agg_{sum}(\tilde{v},e)= \tilde{v} \\
+因为\tilde{v}本身就可以称为邻居聚合
+\end{aligned}
+$$
+在代码上
+````python
+if self.aggregator_method == 'sum':  
+    output = item_embeddings + neighbor_vectors # neighbor_vectors 即 v波浪
+elif self.aggregator_method == 'concat':  
+    # [batch_size, dim * 2]  
+    output = torch.cat([item_embeddings, neighbor_vectors], dim=-1)  
+else:  # neighbor  
+    output = neighbor_vectors
+````
+*若需要进行下一轮对V的聚合则需要将此处得到的v当作初始向量，继续重复上述流程（消息传递与聚合）*
+
+## 预测：
 $$
 \begin{aligned}\widehat{y}_{uv}=f(u, v)\quad其中 f(·) 可以是任意函数，作者采用了内积\\
 最后计算概率\quad p=sigmoid(y_{uv})
 \end{aligned}
 $$
+## 损失计算
+若是 CTR 预估可以使用 BCE 损失函数，若是评分预测则可以使用平方差损失函数
+$$
+\begin{aligned}\widehat{y}_{uv}=f(u, v)\quad其中 f(·) 可以是任意函数，作者采用了内积\\
+最后计算概率\quad p=sigmoid(y_{uv})
+\end{aligned}
+$$
+![[Pasted image 20231227163517.png]]
+
+
+
 
 
