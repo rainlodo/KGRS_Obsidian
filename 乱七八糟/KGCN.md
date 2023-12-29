@@ -48,18 +48,24 @@ self.relation_embedding = nn.Embedding(relation_num, e_dim, max_norm=1)
 
 计算用户关系分数：*（计算实体的邻域表示时，用户关系分数充当个性化过滤器，因为我们将相对于这些用户特定分数有偏见的邻居聚集在一起。）*
 $$
-\begin{aligned}\pi^u_{R_i}=g(u,R_i)\quad g可为任意函数，此处进行求内积，\\ \\表示用户u对关系R_i的偏好程度向后传递该权重
+\begin{aligned}\pi^u_{R_i}=g(u,R_i)\quad g可为任意函数，此处进行求内积
 \end{aligned}
 $$
-随后使用 softmax 进行归一化
 $$
-\begin{aligned}{\tilde{\omega}^u_{R_i}}=Softmax(\omega^u_{R_i})=\frac{\exp(\omega^u_{R_i})}{{\sum}_{j\in N_{(V)}}\exp(\omega^u_{R_j})} \quad 对 \omega^u_{R_i} 进行归一化 \\\\ 其中N_{(V)}为节点v的一阶邻居集
+\begin{split}一般来说，\pi^u_{R_i}表示关系r对用户u的重要性。例如，用户可能对与他以前喜欢的 \\
+电影共享同一明星的电影更感兴趣而另一个用户可能更关心电影的类型。&\\
+\end{split}
+$$
+
+随后使用 softmax 进行归一化(标准化)
+$$
+\begin{aligned}{\tilde\pi^u_{R_i}}=Softmax(\pi^u_{R_i})=\frac{\exp(\pi^u_{R_i}}{{\sum}_{j\in N_{(V)}}\exp(\pi^u_{R_i})} \quad 对 \pi^u_{R_i} 进行归一化 \\\\ 其中N_{(V)}为节点v的一阶邻居集
 \end{aligned}
 $$
 随后
 $$
 \begin{aligned}进行一次加权求和操作得到 \tilde{v} \\
-\tilde{v}={{\sum}_{i\in N_{(V)}}{\tilde{\omega}^u_{R_i}}}·e_i
+\tilde{v}={{\sum}_{i\in N_{(V)}}{\tilde{\omega}^u_{R_i}}}·e_i \quad 
 \end{aligned}
 $$
 
@@ -143,9 +149,7 @@ optimizer.step()
 ````
 
 
-![[Pasted image 20231227163517.png]]
-
-
-
+## KG 的作用体现在哪？
+构建 adj_entity 和 adj_relation （实体邻接列表与关系邻接列表，
 
 
