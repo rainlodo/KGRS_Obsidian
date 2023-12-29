@@ -28,9 +28,40 @@ $$
 \end{aligned}
 $$
 (item, h, t 都在同一向量空间)
+
+## KG 的作用体现在哪？
+用于构建 adj_entity 和 adj_relation （实体邻接列表与关系邻接列表，在每个项目id对应的下标处放上与其直接相连的项目以及他们之间的关系，邻居数受限于超参 n_neighbor）
+
+example：(n_neighbor=5)
+这是一个 adj_entity 的一部分
+![[Pasted image 20231229231806.png]]
+
+## 为什么这么做？
+为了获得与待推荐项目 v 直接相连的项目的实体表示以及他们之间的关系表示，为计算用户关系分数和获得 v 的邻域表示并获得本轮流程 v 的最终表示做好准备
+````python
+def get_neighbors(self, items):  
+    e_ids = [self.adj_entity[item] for item in items]  
+    r_ids = [self.adj_relation[item] for item in items]  
+    e_ids = torch.LongTensor(e_ids)  
+    r_ids = torch.LongTensor(r_ids)  
+    neighbor_entities_embs = self.entity_embedding(e_ids)  
+    neighbor_relations_embs = self.relation_embedding(r_ids)  
+    return neighbor_entities_embs, neighbor_relations_embs
+````
+
+## 用户-项目交互数据中表示用户与项目是否交互的数据不参与上述计算流程，只用于确认 KGCN 的预测是否正确，在训练模型时用以计算 loss
+````python
+# 此处 r 是表示用户与项目是否交互的数据
+for u, i, r in tqdm(DataLoader(train_set, batch_size=batchSize, shuffle=True)):
+	pre = net(u, i)  
+	loss = loss_fcn(pre, r.float())  
+	optimizer.zero_grad()  
+	loss.backward()
+````
+
 # 怎么实现推荐
 
-## 首先创建item，user，relation 的向量空间
+## 首先创建item，user，relation 的向量空间，并获取adj_entity与adj_relation
 
 $$
 \begin{aligned}item_{emb},\;relation_{emb},\;user_{emb}=embedding(\\itemNum,\;relationNum,\;userNum,dim)
@@ -98,17 +129,18 @@ $$
 $$
 2.拼接聚合
 $$
-\begin{aligned} agg_{neighbor}(\tilde{v},e)= \tilde{v} || e \\\\
-使用拼接聚合时需要注意维度变化，\\ 
-假设\tilde{v}与e原维度都为F则拼接后变为2F，\\ W和b的维度需要做相应的变化
+\begin{aligned} &agg_{neighbor}(\tilde{v},e)= \tilde{v} || e \\\\
+&使用拼接聚合时需要注意维度变化，假设\tilde{v}与e原维度都为F则拼接后变为2F，\\ &W和b的维度需要做相应的变化
 \end{aligned}
 $$
+
 3.邻居聚合
 $$
-\begin{aligned} agg_{sum}(\tilde{v},e)= \tilde{v} \\
-因为\tilde{v}本身就可以称为邻居聚合
+\begin{aligned}& agg_{sum}(\tilde{v},e)= \tilde{v} \\
+&因为计算\tilde{v}的过程本身就可以称为邻居聚合
 \end{aligned}
 $$
+
 在代码上
 ````python
 if self.aggregator_method == 'sum':  
@@ -119,6 +151,7 @@ elif self.aggregator_method == 'concat':
 else:  # neighbor  
     output = neighbor_vectors
 ````
+
 *若需要进行下一轮对V的聚合则需要将此处得到的v当作初始向量，继续重复上述流程（消息传递与聚合）*
 
 ## 预测：
@@ -133,23 +166,18 @@ out = torch.sigmoid(torch.sum(user_embeddings * out_item_embeddings, dim=-1))
 
 ## 损失计算
 若是 CTR 预估可以使用 BCE 损失函数，若是评分预测则可以使用平方差损失函数
+
 $$
-\begin{aligned}BCE Loss=−(ytrue​log(y)+(1−ytrue​)log(1−y)) \\
-MSE Loss=n1​∑i=1n​(ytrue,i​−yi​)2
+\begin{aligned} & BCE Loss=−(ytrue​log(y)+(1−ytrue​)log(1−y)) \\
+& MSE Loss=n1​∑i=1n​(ytrue,i​−yi​)2
 \end{aligned}
 $$
 
 将损失向前传播即可训练模型
 ````python
-_v = net(u, i)  
-loss = loss_fcn(logits, _v.float())  
+pre = net(u, i)  
+loss = loss_fcn(pre, r.float())  
 optimizer.zero_grad()  
 loss.backward()  
 optimizer.step()
 ````
-
-
-## KG 的作用体现在哪？
-构建 adj_entity 和 adj_relation （实体邻接列表与关系邻接列表，
-
-
