@@ -59,7 +59,7 @@ for u, i, r in tqdm(DataLoader(train_set, batch_size=batchSize, shuffle=True)):
 	loss.backward()
 ````
 
-# 怎么实现推荐
+# 怎么进行训练
 
 ## 首先创建item，user，relation 的向量空间，并获取adj_entity与adj_relation
 
@@ -181,3 +181,6 @@ optimizer.zero_grad()
 loss.backward()  
 optimizer.step()
 ````
+
+
+# 怎么实现推荐？
