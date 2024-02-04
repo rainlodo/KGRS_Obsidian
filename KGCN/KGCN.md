@@ -90,7 +90,7 @@ $$
 
 随后使用 softmax 进行归一化(标准化)
 $$
-\begin{aligned}{\tilde\pi^u_{R_i}}=Softmax(\pi^u_{R_i})=\frac{\exp(\pi^u_{R_i}}{{\sum}_{j\in N_{(V)}}\exp(\pi^u_{R_i})} \quad 对 \pi^u_{R_i} 进行归一化 \\\\ 其中N_{(V)}为节点v的一阶邻居集
+\begin{aligned}{\tilde\pi^u_{R_i}}=Softmax(\pi^u_{R_i})=\frac{\exp(\pi^u_{R_i})}{{\sum}_{j\in N_{(V)}}\exp(\pi^u_{R_i})} \quad 对 \pi^u_{R_i} 进行归一化 \\\\ 其中N_{(V)}为节点v的一阶邻居集
 \end{aligned}
 $$
 随后
