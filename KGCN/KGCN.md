@@ -96,7 +96,7 @@ $$
 随后
 $$
 \begin{aligned}进行一次加权求和操作得到 \tilde{v} \\
-\tilde{v}={{\sum}_{i\in N_{(V)}}{\tilde{\omega}^u_{R_i}}}·e_i \quad 
+\tilde{v}={{\sum}_{i\in N_{(V)}}{\tilde{\pi}^u_{R_i}}}·e_i \quad 
 \end{aligned}
 $$
 
